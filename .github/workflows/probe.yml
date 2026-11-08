@@ -6,19 +6,17 @@ jobs:
     steps:
       - run: |
           UA="SuperCompara/1.0 (+https://github.com/alaincruz06/super-compara)"
-          for u in \
-            https://www.carrefour.es/robots.txt \
-            "https://www.carrefour.es/supermercado/" \
-            "https://www.carrefour.es/search-api/query/v1/search?query=leche&scope=desktop&lang=es&rows=5&start=0&origin=default&f.op=OR" \
-            https://www.compraonline.alcampo.es/robots.txt \
-            "https://www.compraonline.alcampo.es/api/v5/products/search?term=leche&limit=5" \
-            https://tienda.consum.es/robots.txt \
-            "https://tienda.consum.es/api/rest/V1.0/catalog/product?q=leche&limit=5&offset=0" \
-            "https://tienda.consum.es/api/rest/V1.0/shopping/category/menu" \
-            https://supermercado.eroski.es/robots.txt \
-            "https://supermercado.eroski.es/es/search/results/?q=leche" \
-            https://www.lidl.es/robots.txt ; do
-            echo "=== $u"
-            curl -s -L -m 25 -A "$UA" -H "accept: application/json, text/html" -o /tmp/b -w "HTTP %{http_code} %{content_type} %{size_download}B\n" "$u"
-            case "$u" in *robots.txt) grep -i -E "^(user-agent|disallow).*" /tmp/b | head -25 ;; *) head -c 500 /tmp/b | tr '\n' ' '; echo ;; esac
-          done
+          echo "=== mercadona robots"; curl -s -A "$UA" https://tienda.mercadona.es/robots.txt | head -30
+          echo "=== dia robots"; curl -s -A "$UA" -w "\nHTTP %{http_code}\n" https://www.dia.es/robots.txt | grep -i -E "user-agent|disallow|HTTP" | head -30
+          curl -s -A "$UA" https://prices.openfoodfacts.org/api/openapi.json -o /tmp/o.json
+          python3 - <<'PY'
+          import json
+          o=json.load(open('/tmp/o.json'))
+          for p in ['/api/v1/locations','/api/v1/prices']:
+              print(p, [x['name'] for x in o['paths'][p]['get'].get('parameters',[])])
+          PY
+          echo "=== murcia locations"
+          curl -s -A "$UA" "https://prices.openfoodfacts.org/api/v1/locations?osm_address_city__like=Murcia&size=100" | python3 -c "
+          import json,sys; d=json.load(sys.stdin); print('total',d.get('total'))
+          for l in d.get('items',[])[:100]: print(l.get('id'),l.get('osm_name'),'|',l.get('osm_address_city'),'|',l.get('osm_address_postcode'),'| prices',l.get('price_count'))"
+          echo "=== spain locations count"; curl -s -A "$UA" "https://prices.openfoodfacts.org/api/v1/locations?osm_address_country__like=Espa&size=1" | python3 -c "import json,sys; print(json.load(sys.stdin).get('total'))"
