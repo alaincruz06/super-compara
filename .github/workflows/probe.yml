@@ -1,0 +1,30 @@
+name: probe
+on: workflow_dispatch
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mercadona
+        run: |
+          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
+          curl -s -D - -o /tmp/pc.json -X PUT -H "content-type: application/json" -A "$UA" --data '{"new_postal_code":"30002"}' https://tienda.mercadona.es/api/postal-codes/actions/change-pc/ | grep -i -E "^HTTP|x-customer"
+          cat /tmp/pc.json; echo
+          curl -s -A "$UA" "https://tienda.mercadona.es/api/categories/?lang=es" | head -c 600; echo
+          curl -s -A "$UA" "https://tienda.mercadona.es/api/categories/112/?lang=es" | head -c 1500; echo
+      - name: Dia API guesses
+        run: |
+          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
+          for u in "https://www.dia.es/api/v1/search-back/search/reduced?q=leche&page=1" "https://www.dia.es/api/v1/plp-back/reduced/L105?page=1" "https://www.dia.es/api/v1/plp-insight/initial_analytics/frutas/c/L105?navigation=L105"; do
+            echo "== $u"; curl -s -w "\nHTTP %{http_code}\n" -A "$UA" -H "accept: application/json" "$u" | head -c 1500; echo
+          done
+      - name: Dia discover endpoints from JS
+        run: |
+          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
+          curl -s -A "$UA" -o /tmp/plp.html -w "PLP HTTP %{http_code}\n" https://www.dia.es/frutas/c/L105
+          grep -o 'api/v1/[a-zA-Z0-9_/\-]*' /tmp/plp.html | sort -u | head -50
+          grep -o '<script[^>]*src="[^"]*"' /tmp/plp.html | head -30
+          for s in $(grep -o 'src="[^"]*\.js"' /tmp/plp.html | sed 's/src="//;s/"$//' | head -40); do
+            case $s in http*) url=$s;; *) url="https://www.dia.es$s";; esac
+            curl -s -A "$UA" "$url" | grep -o '/api/v1/[a-zA-Z0-9_/\-]*' 
+          done | sort -u | head -80
+          grep -o '__NEXT_DATA__\|window.__[A-Z_]*' /tmp/plp.html | sort -u
