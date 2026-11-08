@@ -10,8 +10,6 @@ on:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 concurrency:
   group: update
@@ -27,7 +25,7 @@ jobs:
       - name: Fetch last good data
         continue-on-error: true
         run: |
-          git fetch --depth 1 origin data && git worktree add prev origin/data || echo "no data branch yet"
+          git fetch --depth 1 origin gh-pages && git worktree add prev origin/gh-pages || echo "no data branch yet"
 
       - uses: actions/setup-node@v4
         with:
@@ -35,32 +33,16 @@ jobs:
 
       - name: Scrape stores
         env:
-          PREV_DIR: ${{ github.workspace }}/prev
+          PREV_DIR: ${{ github.workspace }}/prev/data
           POSTAL_CODE: ${{ vars.POSTAL_CODE || '30002' }}
           DIA_SOURCE: ${{ secrets.DIA_SOURCE }}
         run: node scraper/build.mjs
 
-      - name: Save data branch (latest snapshot only)
+      - name: Publish to gh-pages (latest snapshot only, no history)
         run: |
-          rm -rf /tmp/data && mkdir /tmp/data && cp site/data/*.json /tmp/data/
-          cd /tmp/data
-          git init -q -b data
+          rm -rf /tmp/pub && cp -r site /tmp/pub && cd /tmp/pub
+          git init -q -b gh-pages
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A && git commit -qm "Data $(date -u +%F)"
-          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" data
-
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: site
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+          git add -A && git commit -qm "Deploy $(date -u +%F)"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" gh-pages
