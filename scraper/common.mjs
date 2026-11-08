@@ -41,16 +41,31 @@ export function groupFor(topName) {
   return 'otros';
 }
 
-// Convert a reference unit ("kg", "L", "ud", "KILO", "LITRO"...) into the
-// base unit we compare in: grams, millilitres or units.
+// Parse a reference unit ("kg", "L", "100 g", "KILO", "LITRO", "ud"...) into
+// [baseUnit, factor] where baseUnit is g, ml or ud and factor is how many base
+// units one reference unit holds ("100 g" -> ['g', 100], "kg" -> ['g', 1000]).
 export function baseUnit(ref = '') {
-  const r = strip(ref).replace(/[^a-z]/g, '');
-  if (/^(kg|kilo|kilos|kilogramo)$/.test(r)) return ['g', 1000];
-  if (/^(g|gr|gramo|gramos)$/.test(r)) return ['g', 1];
-  if (/^(l|litro|litros|lt)$/.test(r)) return ['ml', 1000];
-  if (/^(ml|mililitro|mililitros)$/.test(r)) return ['ml', 1];
-  if (/^(cl)$/.test(r)) return ['ml', 10];
-  return ['ud', 1];
+  const m = strip(String(ref)).trim().match(/^([0-9]+(?:[.,][0-9]+)?)?\s*([a-z.]*)/);
+  const amount = m && m[1] ? parseFloat(m[1].replace(',', '.')) : 1;
+  const r = (m ? m[2] : '').replace(/[^a-z]/g, '');
+  let unit = ['ud', 1];
+  if (/^(kg|kgs|kilo|kilos|kilogramos?)$/.test(r)) unit = ['g', 1000];
+  else if (/^(g|gr|grs|gramos?)$/.test(r)) unit = ['g', 1];
+  else if (/^(l|lt|litros?)$/.test(r)) unit = ['ml', 1000];
+  else if (/^(ml|mililitros?)$/.test(r)) unit = ['ml', 1];
+  else if (/^cl$/.test(r)) unit = ['ml', 10];
+  return [unit[0], unit[1] * amount];
+}
+
+// From pack price + price per reference unit, derive total quantity (in g, ml
+// or units) and a normalised unit price (per kg, per L or per unit).
+export function quantities(price, refPrice, refFormat) {
+  const [qu, factor] = baseUnit(refFormat);
+  if (!price || !refPrice) return { q: null, qu, up: null, uf: { g: 'kg', ml: 'L', ud: 'ud' }[qu] };
+  const qRaw = (price / refPrice) * factor;
+  const q = qu === 'ud' ? round(qRaw, 2) : round(qRaw, 0);
+  const up = qu === 'ud' ? refPrice / factor : (refPrice / factor) * 1000;
+  return { q: q || null, qu, up: round(up, 2), uf: { g: 'kg', ml: 'L', ud: 'ud' }[qu] };
 }
 
 export const num = (v) => {

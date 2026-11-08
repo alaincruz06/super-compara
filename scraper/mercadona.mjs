@@ -1,5 +1,5 @@
 // Mercadona catalogue via the public JSON API used by tienda.mercadona.es.
-import { getJSON, groupFor, baseUnit, num, round, pool } from './common.mjs';
+import { getJSON, groupFor, num, quantities, pool } from './common.mjs';
 
 const API = 'https://tienda.mercadona.es/api';
 
@@ -45,13 +45,10 @@ function normalize(p, sub, leafName) {
   const pi = p.price_instructions || {};
   const price = num(pi.unit_price);
   if (price == null) return null;
-  const ref = num(pi.reference_price);
-  const [qu, factor] = baseUnit(pi.reference_format);
-  // Total quantity in base unit = price / price-per-reference-unit.
-  let q = ref ? round((price / ref) * factor, 0) : null;
-  if (qu === 'ud' && q) q = round(price / ref, 2);
+  const { q, qu, up, uf } = quantities(price, num(pi.reference_price), pi.reference_format);
+  // Mercadona keeps the previous price after a price drop.
   const prev = num(pi.previous_unit_price);
-  const discounted = pi.price_decreased && prev && prev > price;
+  const discounted = prev && prev > price;
   return {
     s: 'm',
     id: String(p.id),
@@ -62,8 +59,8 @@ function normalize(p, sub, leafName) {
     p: price,
     pp: discounted ? prev : null,
     d: discounted ? Math.round(((prev - price) / prev) * 100) : 0,
-    up: ref,
-    uf: pi.reference_format || '',
+    up,
+    uf,
     q,
     qu,
     c: groupFor(sub.top),

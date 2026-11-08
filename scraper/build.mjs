@@ -40,6 +40,15 @@ for (const [code, st] of Object.entries(stores)) {
   }
   const ok = res && res.items.length > 50;
   if (ok) {
+    // Flag price drops against the previous day's snapshot.
+    const before = new Map(prev.items.filter((i) => i.s === code).map((i) => [i.id, i.p]));
+    for (const it of res.items) {
+      const old = before.get(it.id);
+      if (!it.pp && old && old > it.p) {
+        it.pp = old;
+        it.d = Math.round(((old - it.p) / old) * 100);
+      }
+    }
     items.push(...res.items);
     metaStores[code] = { name: st.name, count: res.items.length, updated: new Date().toISOString(), status: 'ok', ...res.meta };
   } else {

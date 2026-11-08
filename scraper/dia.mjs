@@ -11,7 +11,7 @@
 // prices.{price, price_per_unit, measure_unit, strikethrough_price,
 // discount_percentage}, l1_category_description, l2_category_description.
 import { readFile } from 'node:fs/promises';
-import { groupFor, baseUnit, num, round, getJSON } from './common.mjs';
+import { groupFor, num, quantities, getJSON } from './common.mjs';
 
 // Dia L1 category codes -> names (used when rows only carry the code).
 const DIA_L1 = {
@@ -52,17 +52,15 @@ export function normalizeDia(r) {
   if (price == null) return null;
   const id = String(r.sku_id ?? r.object_id ?? r.id ?? '');
   if (!id) return null;
-  const ref = num(pr.price_per_unit ?? r.price_per_unit);
-  const [qu, factor] = baseUnit(pr.measure_unit ?? r.measure_unit);
-  let q = ref ? round((price / ref) * factor, 0) : null;
-  if (qu === 'ud' && q) q = round(price / ref, 2);
+  const qs = quantities(price, num(pr.price_per_unit ?? r.price_per_unit), pr.measure_unit ?? r.measure_unit);
+  const { qu, up, uf } = qs;
+  let q = qs.q;
   if (!q && r.weight_in_grams) q = num(r.weight_in_grams);
   const prev = num(pr.strikethrough_price);
   const discounted = prev && prev > price;
   const top = r.l1_category_description || DIA_L1[r.l1_category] || '';
   const url = r.url ? (r.url.startsWith('http') ? r.url : `https://www.dia.es${r.url}`) : '';
   const img = r.image ? (r.image.startsWith('http') ? r.image : `https://www.dia.es${r.image}`) : '';
-  const unitLabel = { g: 'kg', ml: 'L', ud: 'ud' }[qu];
   return {
     s: 'd',
     id,
@@ -73,8 +71,8 @@ export function normalizeDia(r) {
     p: price,
     pp: discounted ? prev : null,
     d: discounted ? num(pr.discount_percentage) || Math.round(((prev - price) / prev) * 100) : 0,
-    up: ref,
-    uf: unitLabel,
+    up,
+    uf,
     q,
     qu,
     c: groupFor(top),
