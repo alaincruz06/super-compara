@@ -34,6 +34,7 @@ button { cursor: pointer; }
 .search input:focus { outline: none; border-color: var(--accent); }
 .search button { padding: 0 18px; border: 0; border-radius: 0 10px 10px 0; background: var(--accent); color: #fff; font-weight: 600; }
 .list-btn { border: 1.5px solid var(--line); background: var(--card); border-radius: 10px; padding: 9px 12px; white-space: nowrap; }
+.recipes-link { text-decoration: none; color: inherit; }
 .pill { display: inline-block; min-width: 20px; padding: 1px 6px; border-radius: 99px; background: var(--accent); color: #fff; font-size: 12px; text-align: center; }
 
 .cats { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: thin; }

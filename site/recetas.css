@@ -1,0 +1,60 @@
+.nav { display: flex; gap: 4px; flex: 1; }
+.nav a { padding: 8px 12px; border-radius: 8px; text-decoration: none; color: var(--muted); font-weight: 600; font-size: 14px; white-space: nowrap; }
+.nav a.on, .nav a:hover { background: var(--bg); color: var(--ink); }
+
+.recipes { padding-top: 16px; padding-bottom: 30px; }
+.panel { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; margin-bottom: 14px; }
+.panel h2 { margin: 0 0 6px; font-size: 17px; }
+.ing-list { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 12px; }
+.ing { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: var(--bg); padding: 5px 10px 5px 6px; border-radius: 99px; font-size: 13px; cursor: pointer; }
+.ing input { margin: 0; }
+.ing.off { opacity: .45; text-decoration: line-through; }
+.ing .dot { width: 8px; height: 8px; border-radius: 50%; }
+.dot.m { background: var(--m); } .dot.d { background: var(--d); }
+.field { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
+.field input, .field select { padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); font-size: 14px; }
+.cfg { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; margin: 10px 0 12px; }
+.go { display: flex; align-items: center; gap: 12px; margin-top: 14px; flex-wrap: wrap; }
+.primary { border: 0; background: var(--accent); color: #fff; font-weight: 700; padding: 11px 18px; border-radius: 10px; }
+.primary:disabled { opacity: .6; cursor: wait; }
+.ghost { border: 1px solid var(--line); background: var(--bg); padding: 10px 14px; border-radius: 10px; }
+
+.out-head { display: flex; justify-content: space-between; align-items: center; margin: 8px 2px 10px; gap: 10px; flex-wrap: wrap; }
+.out-head h2 { margin: 0; font-size: 18px; }
+.recipe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 14px; }
+.recipe { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.recipe h3 { margin: 0; font-size: 17px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-size: 12px; padding: 2px 8px; border-radius: 99px; background: var(--bg); border: 1px solid var(--line); }
+.recipe h4 { margin: 6px 0 2px; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.recipe ul, .recipe ol { margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.5; }
+.recipe li.extra { color: var(--deal); }
+.recipe .tip { font-size: 13px; background: var(--bg); padding: 8px 10px; border-radius: 8px; }
+.recipe .row { display: flex; gap: 8px; margin-top: auto; padding-top: 6px; }
+.recipe .row button { flex: 1; }
+
+.extras { margin-top: 14px; }
+.extra-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 14px; flex-wrap: wrap; }
+.extra-row b { min-width: 140px; }
+.offer { display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); font-size: 13px; }
+.offer button { border: 0; background: var(--accent); color: #fff; border-radius: 6px; padding: 3px 8px; font-size: 12px; }
+.offer button.added { background: var(--m); }
+.loading { display: grid; place-items: center; padding: 40px; color: var(--muted); }
+.spin { width: 28px; height: 28px; border: 3px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 10px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.err { padding: 12px 14px; border-radius: 10px; background: var(--d-soft); color: var(--d); border: 1px solid color-mix(in srgb, var(--d) 30%, transparent); }
+
+dialog { border: 1px solid var(--line); border-radius: 14px; padding: 0; background: var(--card); color: var(--ink); width: min(460px, 94vw); }
+dialog::backdrop { background: rgba(0,0,0,.4); }
+.dlg { padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.dlg h2 { margin: 0; font-size: 18px; }
+
+@media (max-width: 760px) {
+  .nav { order: 2; flex-basis: 100%; }
+  .recipe-grid { grid-template-columns: 1fr; }
+}
+@media print {
+  .top, .panel, .foot, .row, .out-head button, .extras, #saved { display: none !important; }
+  .recipe { break-inside: avoid; border: 0; }
+  body { background: #fff; }
+}
