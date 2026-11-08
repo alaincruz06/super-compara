@@ -91,16 +91,18 @@ function filtered() {
   return out.map((x) => x.it);
 }
 
-// Cheapest per-unit item for each store among the results (same unit type
-// as the most common one, so kg is compared with kg and L with L).
+// Cheapest per-unit item for each store among the most relevant results.
+// Only items in the dominant category and unit type are compared, so a
+// search for "leche" compares milk with milk (not facial cleanser).
 function bestPerStore(items) {
-  const counts = {};
-  for (const it of items.slice(0, 40)) if (it.up) counts[it.qu] = (counts[it.qu] || 0) + 1;
-  const unit = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0];
+  const top = items.slice(0, 30);
+  const mode = (arr) => Object.entries(arr.reduce((a, x) => ((a[x] = (a[x] || 0) + 1), a), {})).sort((a, b) => b[1] - a[1])[0]?.[0];
+  const cat = mode(top.map((i) => i.c));
+  const unit = mode(top.filter((i) => i.c === cat && i.up).map((i) => i.qu));
   const best = {};
   if (!unit) return { best, unit };
   for (const it of items.slice(0, 200)) {
-    if (it.qu !== unit || !it.up) continue;
+    if (it.c !== cat || it.qu !== unit || !it.up) continue;
     if (!best[it.s] || it.up < best[it.s].up) best[it.s] = it;
   }
   return { best, unit };
@@ -379,6 +381,10 @@ $('#results').addEventListener('click', (e) => {
     run();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+});
+$('#toggleFilters').addEventListener('click', (e) => {
+  const open = $('#toolbar').classList.toggle('open');
+  e.currentTarget.setAttribute('aria-expanded', open);
 });
 $('#openList').addEventListener('click', () => openList(true));
 $('#closeList').addEventListener('click', () => openList(false));

@@ -20,6 +20,7 @@
   :root { --bg:#0f131a; --card:#171c25; --ink:#e7eaf0; --muted:#98a2b3; --line:#2a3140; --m-soft:#11301f; --d-soft:#3a1715; }
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body { margin: 0; }
 .wrap { max-width: 1280px; margin: 0 auto; padding: 0 16px; }
 button, input, select { font: inherit; color: inherit; }
@@ -53,6 +54,7 @@ button { cursor: pointer; }
 .views button { border: 0; background: var(--bg); padding: 6px 11px; }
 .views button + button { border-left: 1px solid var(--line); }
 .views button.on { background: var(--ink); color: var(--card); }
+.filters-btn { display: none; }
 .link { border: 0; background: none; color: var(--accent); padding: 0; }
 
 .notice { padding: 10px 14px; margin-top: 14px; border-radius: 10px; background: #fffaeb; border: 1px solid #fedf89; color: #7a2e0e; font-size: 14px; }
@@ -123,6 +125,9 @@ button { cursor: pointer; }
 .foot { color: var(--muted); font-size: 12px; padding-bottom: 30px; line-height: 1.6; }
 
 @media (max-width: 760px) {
+  .filters-btn { display: block; width: 100%; margin-top: 12px; padding: 10px; border: 1px solid var(--line); background: var(--card); border-radius: 10px; font-weight: 600; }
+  .toolbar { display: none; margin-top: 8px; }
+  .toolbar.open { display: flex; }
   .top-row { flex-wrap: wrap; gap: 10px; }
   .search { order: 3; flex-basis: 100%; }
   .brand { flex: 1; }
