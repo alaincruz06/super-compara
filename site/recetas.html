@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Recetas con tu lista · SuperCompara</title>
-  <meta name="description" content="Genera recetas con los ingredientes de tu lista de la compra: tiempo, raciones, número de platos y dieta." />
+  <meta name="description" content="Encuentra recetas con los ingredientes de tu lista de la compra: tiempo, raciones, número de platos y dieta." />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍳</text></svg>" />
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="recetas.css" />
@@ -17,7 +17,6 @@
         <a href="./">Comparar precios</a>
         <a href="recetas.html" class="on" aria-current="page">🍳 Recetas</a>
       </nav>
-      <button class="list-btn" id="settingsBtn" aria-label="Ajustes de IA">⚙︎ Clave IA</button>
     </div>
   </header>
 
@@ -28,8 +27,9 @@
       <div id="ingList" class="ing-list"></div>
       <label class="field">
         <span>Otros ingredientes que ya tienes en casa</span>
-        <input id="pantry" type="text" placeholder="sal, aceite, ajo, especias…" />
+        <input id="pantry" type="text" placeholder="patatas, arroz, cebolla, queso…" />
       </label>
+      <label class="chk basics"><input type="checkbox" id="basics" checked /> Tengo lo básico: aceite, sal, ajo, especias, azúcar, harina y caldo</label>
     </section>
 
     <section class="panel" aria-labelledby="cfgTitle">
@@ -46,40 +46,35 @@
           <input id="servings" type="number" min="1" max="12" value="2" /></label>
         <label class="field"><span>Tipo de comida</span>
           <select id="meal">
-            <option value="cualquiera">Cualquiera</option><option value="desayuno">Desayuno</option>
-            <option value="comida">Comida</option><option value="cena">Cena</option>
-            <option value="meal prep semanal (táper, se conserva varios días)">Meal prep (tápers)</option>
-            <option value="snack o merienda">Snack / merienda</option>
+            <option value="">Cualquiera</option><option value="d">Desayuno</option>
+            <option value="c">Comida</option><option value="n">Cena</option>
+            <option value="prep">Meal prep (tápers)</option>
+            <option value="s">Snack / merienda / postre</option>
           </select></label>
         <label class="field"><span>Dieta</span>
           <select id="diet">
-            <option value="ninguna">Sin restricciones</option><option value="vegetariana">Vegetariana</option>
-            <option value="vegana">Vegana</option><option value="sin gluten">Sin gluten</option>
-            <option value="sin lactosa">Sin lactosa</option><option value="baja en calorías">Ligera</option>
-            <option value="alta en proteína">Alta en proteína</option>
+            <option value="">Sin restricciones</option><option value="v">Vegetariana</option>
+            <option value="vg">Vegana</option><option value="gf">Sin gluten</option><option value="lf">Sin lactosa</option>
           </select></label>
         <label class="field"><span>Dificultad</span>
           <select id="difficulty">
-            <option value="cualquiera">Cualquiera</option><option value="fácil">Fácil</option><option value="media">Media</option>
+            <option value="">Cualquiera</option><option value="f">Solo fáciles</option>
           </select></label>
         <label class="field"><span>Ingredientes extra</span>
           <select id="extras">
-            <option value="few" selected>Permitir pocos extras</option>
+            <option value="few" selected>Que falten 2 como mucho</option>
             <option value="none">Solo lo que tengo</option>
-            <option value="any">Los que hagan falta</option>
+            <option value="any">No importa</option>
           </select></label>
         <label class="field"><span>Utensilios</span>
           <select id="tools">
-            <option value="cocina completa">Cocina completa</option>
-            <option value="sin horno">Sin horno</option>
-            <option value="solo microondas">Solo microondas</option>
-            <option value="freidora de aire">Freidora de aire</option>
+            <option value="">Cocina completa</option>
+            <option value="nooven">Sin horno</option>
+            <option value="micro">Solo microondas</option>
           </select></label>
       </div>
-      <label class="field"><span>Algo más (opcional)</span>
-        <input id="notes" type="text" placeholder="p. ej. sin picante, cocina mediterránea, para niños…" /></label>
       <div class="go">
-        <button id="generate" class="primary">✨ Generar recetas</button>
+        <button id="generate" class="primary">🍳 Buscar recetas</button>
         <span id="status" class="meta" role="status"></span>
       </div>
     </section>
@@ -88,25 +83,7 @@
     <section id="saved"></section>
   </main>
 
-  <dialog id="settings">
-    <form method="dialog" class="dlg">
-      <h2>Clave de la IA</h2>
-      <p class="meta">Las recetas se generan con Claude (Anthropic) usando <b>tu propia clave de API</b>. Se guarda solo en este navegador y se envía únicamente a api.anthropic.com. Consíguela en <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a>.</p>
-      <label class="field"><span>Clave de API</span>
-        <input id="apiKey" type="password" autocomplete="off" placeholder="sk-ant-…" /></label>
-      <label class="field"><span>Modelo</span>
-        <select id="model">
-          <option value="claude-haiku-5-5">Claude Haiku 5.5 (rápido y barato)</option>
-          <option value="claude-sonnet-5-5">Claude Sonnet 5.5 (mejores recetas)</option>
-        </select></label>
-      <div class="go">
-        <button value="save" class="primary">Guardar</button>
-        <button value="clear" id="clearKey" type="button" class="ghost">Borrar clave</button>
-      </div>
-    </form>
-  </dialog>
-
-  <footer class="wrap foot">Recetas generadas por IA: revisa alergias, tiempos y cocción antes de cocinar.</footer>
+  <footer class="wrap foot">Recetario propio de SuperCompara. Revisa alergias y tiempos de cocción antes de cocinar.</footer>
   <script type="module" src="recetas.js"></script>
 </body>
 </html>

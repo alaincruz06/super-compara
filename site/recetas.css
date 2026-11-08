@@ -58,3 +58,7 @@ dialog::backdrop { background: rgba(0,0,0,.4); }
   .recipe { break-inside: avoid; border: 0; }
   body { background: #fff; }
 }
+.basics { margin-top: 10px; font-size: 14px; }
+.chip.ok { background: var(--m-soft); color: var(--m); border-color: transparent; }
+.chip.warn { background: var(--d-soft); color: var(--d); border-color: transparent; }
+.recipe li.opt { color: var(--muted); }
