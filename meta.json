@@ -1,0 +1,113 @@
+{
+  "built": "2026-11-08T09:58:22.599Z",
+  "postalCode": "30002",
+  "groups": [
+    {
+      "id": "fruta-verdura",
+      "name": "Fruta y verdura"
+    },
+    {
+      "id": "carne",
+      "name": "Carne"
+    },
+    {
+      "id": "pescado",
+      "name": "Pescado y marisco"
+    },
+    {
+      "id": "charcuteria",
+      "name": "Charcutería y quesos"
+    },
+    {
+      "id": "lacteos",
+      "name": "Huevos, leche y mantequilla"
+    },
+    {
+      "id": "yogures",
+      "name": "Yogures y postres"
+    },
+    {
+      "id": "panaderia",
+      "name": "Panadería y bollería"
+    },
+    {
+      "id": "congelados",
+      "name": "Congelados y helados"
+    },
+    {
+      "id": "despensa",
+      "name": "Arroz, pasta y legumbres"
+    },
+    {
+      "id": "aceite",
+      "name": "Aceite, salsas y especias"
+    },
+    {
+      "id": "conservas",
+      "name": "Conservas, caldos y cremas"
+    },
+    {
+      "id": "desayuno",
+      "name": "Café, cereales y galletas"
+    },
+    {
+      "id": "dulces",
+      "name": "Azúcar, chocolate y golosinas"
+    },
+    {
+      "id": "aperitivos",
+      "name": "Aperitivos y frutos secos"
+    },
+    {
+      "id": "preparados",
+      "name": "Platos preparados y pizzas"
+    },
+    {
+      "id": "bebidas",
+      "name": "Agua, refrescos y zumos"
+    },
+    {
+      "id": "bodega",
+      "name": "Bodega"
+    },
+    {
+      "id": "limpieza",
+      "name": "Limpieza y hogar"
+    },
+    {
+      "id": "higiene",
+      "name": "Cuidado personal"
+    },
+    {
+      "id": "salud",
+      "name": "Salud y parafarmacia"
+    },
+    {
+      "id": "bebe",
+      "name": "Bebé"
+    },
+    {
+      "id": "mascotas",
+      "name": "Mascotas"
+    },
+    {
+      "id": "otros",
+      "name": "Otros"
+    }
+  ],
+  "stores": {
+    "m": {
+      "name": "Mercadona",
+      "count": 4416,
+      "updated": "2026-11-08T09:58:22.598Z",
+      "status": "ok",
+      "warehouse": "alc1",
+      "postalCode": "30002"
+    },
+    "d": {
+      "name": "Dia",
+      "count": 0,
+      "status": "pending"
+    }
+  }
+}
