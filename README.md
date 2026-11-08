@@ -10,7 +10,7 @@ Compare Mercadona and Dia prices in one place: search, browse by category, switc
 GitHub Actions (daily 06:17 Madrid)          GitHub Pages (static)
  scraper/build.mjs ──► site/data/*.json ──►  site/index.html + app.js
    ├─ mercadona.mjs  (public tienda.mercadona.es JSON API, by postal code)
-   └─ dia.mjs        (imports Dia rows from DIA_SOURCE, see below)
+   └─ dia.mjs        (imports dia.json from the dia-data branch, uploaded by dia-sync/)
 ```
 
 - Everything is static and free: no server or database. The browser loads one JSON file (~1–2 MB, gzipped by Pages) and searches it locally, so results are instant.
@@ -23,12 +23,11 @@ GitHub Actions (daily 06:17 Madrid)          GitHub Pages (static)
 | What | Where | Default |
 |---|---|---|
 | Postal code (sets Mercadona's warehouse) | Repo → Settings → Secrets and variables → Actions → **Variables** → `POSTAL_CODE` | `30002` (Murcia → `alc1`) |
-| Dia data source | Repo → Settings → Secrets and variables → Actions → **Secrets** → `DIA_SOURCE` | not set |
 | Run now | Actions → "Update prices and deploy" → Run workflow | daily |
 
 ## Dia data
 
-dia.es uses Akamai bot protection, which blocks automated requests from cloud servers, including GitHub Actions. So the scraper doesn't fetch dia.es directly. `scraper/dia.mjs` imports Dia products from whatever `DIA_SOURCE` points to: an `https://` URL or a file path to a JSON array of rows in Dia's own product format (`sku_id`, `display_name`, `url`, `image`, `prices.price`, `prices.price_per_unit`, `prices.measure_unit`, `prices.strikethrough_price`, `l1_category_description`…). Once it's set, Dia products appear in the site automatically.
+dia.es blocks automated requests from cloud servers, including GitHub Actions. Dia prices are collected on your own computer with [`dia-sync/`](dia-sync/README.md), which runs on a schedule or from your browser. The results go to the data-only `dia-data` branch, and the build merges them in. Dia prices older than a week are flagged on the site.
 
 ## Run locally
 

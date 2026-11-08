@@ -51,6 +51,8 @@ for (const [code, st] of Object.entries(stores)) {
     }
     items.push(...res.items);
     metaStores[code] = { name: st.name, count: res.items.length, updated: new Date().toISOString(), status: 'ok', ...res.meta };
+    // Stores synced from elsewhere carry their own fetch time; flag old data.
+    if (Date.now() - new Date(metaStores[code].updated) > 7 * 864e5) metaStores[code].status = 'old';
   } else {
     const old = prev.items.filter((i) => i.s === code);
     items.push(...old);

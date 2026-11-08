@@ -46,16 +46,18 @@ const singular = (t) => (t.length > 4 && t.endsWith('es') ? t.slice(0, -2) : t.l
 
 function score(it, toks) {
   if (!toks.length) return 1;
-  let s = 0;
+  let s = 0, hits = 0;
   for (const t of toks) {
     const t2 = singular(t);
     const inName = it._n.includes(t) || it._n.includes(t2);
     if (!inName && !it._sc.includes(t2)) return 0;
     if (inName) {
+      hits++;
       s += 2;
       if (new RegExp(`(^|\\s)${t2.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`).test(it._n)) s += 2;
     } else s += 0.5;
   }
+  if (!hits) return 0; // category text alone isn't enough
   if (it._n.startsWith(singular(toks[0]))) s += 3;
   return s - it._n.length / 200;
 }
@@ -78,8 +80,9 @@ function filtered() {
     if (!sc) continue;
     out.push({ it, sc });
   }
+  const byRel = (a, b) => b.sc - a.sc || a.it.p - b.it.p;
   const by = {
-    rel: (a, b) => b.sc - a.sc || a.it.p - b.it.p,
+    rel: byRel,
     'price-asc': (a, b) => a.it.p - b.it.p,
     'price-desc': (a, b) => b.it.p - a.it.p,
     'unit-asc': (a, b) => (a.it.up ?? 1e9) - (b.it.up ?? 1e9),
@@ -87,21 +90,32 @@ function filtered() {
     'w-asc': (a, b) => (a.it.q ?? 1e12) - (b.it.q ?? 1e12),
     'w-desc': (a, b) => (b.it.q ?? -1) - (a.it.q ?? -1),
   }[state.sort];
-  out.sort(by);
+  if (state.sort === 'unit-asc') {
+    // Compare like with like: the dominant category/unit of the most
+    // relevant results goes first, then everything else.
+    out.sort(byRel);
+    const { cat, unit } = dominant(out.map((x) => x.it));
+    const rank = (it) => (it.c === cat && it.qu === unit ? 0 : it.qu === unit ? 1 : 2);
+    out.sort((a, b) => rank(a.it) - rank(b.it) || (a.it.up ?? 1e9) - (b.it.up ?? 1e9));
+  } else out.sort(by);
   return out.map((x) => x.it);
 }
 
 // Cheapest per-unit item for each store among the most relevant results.
 // Only items in the dominant category and unit type are compared, so a
 // search for "leche" compares milk with milk (not facial cleanser).
-function bestPerStore(items) {
+function dominant(items) {
   const top = items.slice(0, 30);
   const mode = (arr) => Object.entries(arr.reduce((a, x) => ((a[x] = (a[x] || 0) + 1), a), {})).sort((a, b) => b[1] - a[1])[0]?.[0];
   const cat = mode(top.map((i) => i.c));
   const unit = mode(top.filter((i) => i.c === cat && i.up).map((i) => i.qu));
+  return { cat, unit };
+}
+function bestPerStore(items) {
+  const { cat, unit } = dominant(items);
   const best = {};
   if (!unit) return { best, unit };
-  for (const it of items.slice(0, 200)) {
+  for (const it of items.slice(0, 300)) {
     if (it.c !== cat || it.qu !== unit || !it.up) continue;
     if (!best[it.s] || it.up < best[it.s].up) best[it.s] = it;
   }
@@ -118,7 +132,7 @@ function sizeText(it) {
 const unitText = (it) => (it.up ? `${fmt(it.up)}/${it.uf || it.qu}` : '');
 const key = (it) => `${it.s}:${it.id}`;
 
-function card(it, bestKeys) {
+function card(it, bestKeys, bestLabel = '€/kg') {
   const inList = !!getList()[key(it)];
   const isBest = bestKeys.has(key(it));
   const size = [it.k, sizeText(it)].filter(Boolean).join(' · ');
@@ -126,7 +140,7 @@ function card(it, bestKeys) {
     <div class="badges">
       <span class="tag ${it.s}">${STORES[it.s].name}</span>
       ${it.d ? `<span class="tag deal">-${it.d}%</span>` : ''}
-      ${isBest ? '<span class="tag bestt">Mejor €/kg</span>' : ''}
+      ${isBest ? `<span class="tag bestt">Mejor ${bestLabel}</span>` : ''}
     </div>
     <a class="img" href="${esc(it.u)}" target="_blank" rel="noopener">${it.img ? `<img loading="lazy" src="${esc(it.img)}" alt="">` : ''}</a>
     <div class="info">
@@ -178,14 +192,14 @@ function render() {
       const list = items.filter((i) => i.s === s);
       const st = META.stores[s] || {};
       const body = list.length
-        ? `<div class="grid">${list.slice(0, shown).map((i) => card(i, bestKeys)).join('')}</div>`
+        ? `<div class="grid">${list.slice(0, shown).map((i) => card(i, bestKeys, `€/${unitLabel}`)).join('')}</div>`
         : `<div class="empty">${st.status === 'pending' ? 'Datos de Dia aún no disponibles.' : 'Sin resultados en esta tienda.'}</div>`;
       return `<div><div class="col-head ${s}"><span>${STORES[s].name}</span><span>${list.length}</span></div>${body}</div>`;
     });
     res.innerHTML = `<div class="compare">${cols.join('')}</div>`;
     $('#more').hidden = Math.max(counts.m, counts.d) <= shown;
   } else {
-    res.innerHTML = `<div class="${state.view === 'list' ? 'rows' : 'grid'}">${items.slice(0, shown).map((i) => card(i, bestKeys)).join('')}</div>`;
+    res.innerHTML = `<div class="${state.view === 'list' ? 'rows' : 'grid'}">${items.slice(0, shown).map((i) => card(i, bestKeys, `€/${unitLabel}`)).join('')}</div>`;
     $('#more').hidden = items.length <= shown;
   }
 }
@@ -214,6 +228,7 @@ function renderChrome() {
   const notes = [];
   for (const [s, st] of Object.entries(META.stores)) {
     if (st.status === 'pending') notes.push(`${st.name}: los precios todavía no están disponibles.`);
+    else if (st.status === 'old') notes.push(`${st.name}: precios del ${new Date(st.updated).toLocaleDateString('es-ES')} (hace más de una semana).`);
     else if (st.status === 'stale' || st.status === 'error') notes.push(`${st.name}: la última actualización falló; se muestran los precios del ${new Date(st.updated).toLocaleDateString('es-ES')}.`);
   }
   $('#notices').innerHTML = notes.map((n) => `<div class="notice">${esc(n)}</div>`).join('');
@@ -404,5 +419,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') openList(false);
   if (e.key === '/' && document.activeElement.tagName !== 'INPUT') { e.preventDefault(); $('#q').focus(); }
 });
+
+window.addEventListener('hashchange', () => { readHash(); renderChrome(); run(); });
 
 load();

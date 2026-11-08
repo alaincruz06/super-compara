@@ -21,11 +21,18 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Fetch last good data
         continue-on-error: true
         run: |
-          git fetch --depth 1 origin gh-pages && git worktree add prev origin/gh-pages || echo "no data branch yet"
+          git fetch --depth 1 origin gh-pages && git worktree add prev FETCH_HEAD || echo "no data branch yet"
+
+      - name: Fetch synced Dia data
+        continue-on-error: true
+        run: |
+          git fetch --depth 1 origin dia-data && git worktree add dia FETCH_HEAD || echo "no Dia data yet"
 
       - uses: actions/setup-node@v4
         with:
@@ -35,7 +42,7 @@ jobs:
         env:
           PREV_DIR: ${{ github.workspace }}/prev/data
           POSTAL_CODE: ${{ vars.POSTAL_CODE || '30002' }}
-          DIA_SOURCE: ${{ secrets.DIA_SOURCE }}
+          DIA_SOURCE: ${{ secrets.DIA_SOURCE || format('{0}/dia/dia.json', github.workspace) }}
         run: node scraper/build.mjs
 
       - name: Publish to gh-pages (latest snapshot only, no history)

@@ -63,7 +63,8 @@ export function quantities(price, refPrice, refFormat) {
   const [qu, factor] = baseUnit(refFormat);
   if (!price || !refPrice) return { q: null, qu, up: null, uf: { g: 'kg', ml: 'L', ud: 'ud' }[qu] };
   const qRaw = (price / refPrice) * factor;
-  const q = qu === 'ud' ? round(qRaw, 2) : round(qRaw, 0);
+  // Unit counts are integers; small differences come from rounded unit prices.
+  const q = qu === 'ud' ? (Math.abs(qRaw - Math.round(qRaw)) < 0.2 ? Math.round(qRaw) : round(qRaw, 1)) : round(qRaw, 0);
   const up = qu === 'ud' ? refPrice / factor : (refPrice / factor) * 1000;
   return { q: q || null, qu, up: round(up, 2), uf: { g: 'kg', ml: 'L', ud: 'ud' }[qu] };
 }

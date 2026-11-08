@@ -1,2 +1,4 @@
 site/data/
 node_modules/
+dia-sync/.token
+dia-sync/dia.json

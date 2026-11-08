@@ -1,10 +1,11 @@
 // Dia catalogue importer.
 //
-// dia.es sits behind Akamai bot protection that blocks automated requests from
-// cloud servers (including GitHub Actions), so this module does NOT fetch
-// dia.es itself. It imports Dia product rows from a source you configure:
-//
-//   DIA_SOURCE=<path or https URL to a JSON array of Dia product rows>
+// dia.es blocks automated requests from cloud servers (including GitHub
+// Actions), so this module does NOT fetch dia.es itself. Dia prices are
+// collected on the owner's computer with dia-sync/ and uploaded to the
+// `dia-data` branch; the workflow checks that branch out and points
+// DIA_SOURCE at its dia.json (a path or https URL; either a JSON array of
+// rows or {fetched, items: [...]}).
 //
 // Rows use Dia's own product schema (as returned by dia.es search/category
 // pages, and by most Dia datasets): sku_id, display_name, brand, url, image,
@@ -33,9 +34,18 @@ export async function fetchDia({ source = process.env.DIA_SOURCE, log = console.
     log('Dia: no DIA_SOURCE configured, skipping');
     return null;
   }
-  const rows = /^https?:/.test(source)
-    ? (await getJSON(source)).json
-    : JSON.parse(await readFile(source, 'utf8'));
+  let rows;
+  try {
+    rows = /^https?:/.test(source)
+      ? (await getJSON(source)).json
+      : JSON.parse(await readFile(source, 'utf8'));
+  } catch (e) {
+    if (e.code === 'ENOENT' || /HTTP 404/.test(e.message)) {
+      log('Dia: no synced data yet');
+      return null;
+    }
+    throw e;
+  }
   const list = Array.isArray(rows) ? rows : rows.items || rows.search_items || [];
   const seen = new Map();
   for (const r of list) {
@@ -43,7 +53,9 @@ export async function fetchDia({ source = process.env.DIA_SOURCE, log = console.
     if (item && !seen.has(item.id)) seen.set(item.id, item);
   }
   log(`Dia: ${seen.size} products imported`);
-  return { items: [...seen.values()], meta: { source: /^https?:/.test(source) ? 'url' : 'file' } };
+  const meta = { method: rows.method || 'import' };
+  if (rows.fetched) meta.updated = rows.fetched;
+  return { items: [...seen.values()], meta };
 }
 
 export function normalizeDia(r) {
