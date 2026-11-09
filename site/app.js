@@ -301,7 +301,7 @@ function renderList() {
   // Refresh prices from current data.
   for (const [k, v] of Object.entries(l)) {
     const it = ALL.find((i) => key(i) === k);
-    if (it) v.p = it.p;
+    if (it) { v.p = it.p; v.img = it.img; }
   }
   const entries = Object.entries(l);
   if (!entries.length) {
