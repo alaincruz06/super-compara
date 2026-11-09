@@ -1,0 +1,15 @@
+name: probe
+on: workflow_dispatch
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          U="https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/1669.jpg?t=20260812080127"
+          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/130 Safari/537.36"
+          echo "no referer:"; curl -s -o /dev/null -w "%{http_code} %{content_type} %{size_download}\n" -A "$UA" "$U"
+          echo "github.io referer:"; curl -s -o /dev/null -w "%{http_code} %{content_type} %{size_download}\n" -A "$UA" -e "https://alaincruz06.github.io/super-compara/" "$U"
+          echo "consum referer:"; curl -s -o /dev/null -w "%{http_code} %{content_type} %{size_download}\n" -A "$UA" -e "https://tienda.consum.es/" "$U"
+          echo "headers:"; curl -s -D - -o /dev/null -A "$UA" -e "https://alaincruz06.github.io/" "$U" | head -20
+          echo "data check:"; curl -s https://alaincruz06.github.io/super-compara/data/c.json | python3 -c "
+          import json,sys; d=json.load(sys.stdin)['items']; print(len(d), 'empty img', sum(1 for i in d if not i.get('img'))); print([i['img'] for i in d[:3]])"
