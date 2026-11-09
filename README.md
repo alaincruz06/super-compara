@@ -1,17 +1,20 @@
 # SuperCompara 🛒
 
-Compare Mercadona and Dia prices in one place: search, browse by category, switch between grid, list and a side-by-side store view, filter by price, deals and weight/volume, sort by price, €/kg, discount or size, and build a shopping list with per-store totals.
+Compare Mercadona, Consum and Dia prices for your postal code: search, browse by category, switch between grid, list and a side-by-side store view, filter by price, deals and weight/volume, sort by price, €/kg, discount or size, and build a shopping list with per-store totals.
 
 **Live site:** https://alaincruz06.github.io/super-compara/
 
 ## How it works
 
 ```
-GitHub Actions (daily 06:17 Madrid)          GitHub Pages (static)
- scraper/build.mjs ──► site/data/*.json ──►  site/index.html + app.js
-   ├─ mercadona.mjs  (public tienda.mercadona.es JSON API, by postal code)
-   └─ dia.mjs        (imports dia.json from the dia-data branch, uploaded by dia-sync/)
+GitHub Actions (daily 06:17 Madrid)               GitHub Pages (static)
+ scraper/build.mjs ──► site/data/m-<wh>.json ──►  site/index.html (asks the postal
+   ├─ mercadona.mjs   one file per warehouse      code on first visit, stored in
+   ├─ consum.mjs      site/data/c.json            the browser) + recetas.html
+   └─ dia.mjs         site/data/d.json (from dia-sync/)
 ```
+
+- **Postal code**: asked on first visit and saved in the browser (change it with the 📍 button). The first two digits (province) decide which price lists load: the Mercadona warehouse serving that province (Madrid prices as reference where Mercadona has no online shop), Consum where it has stores, and Dia.
 
 - Everything is static and free: no server or database. The browser loads one JSON file (~1–2 MB, gzipped by Pages) and searches it locally, so results are instant.
 - The `gh-pages` branch holds only the latest build. If a store fails to update, the previous day's prices for that store are kept and the site shows a notice.
@@ -22,7 +25,6 @@ GitHub Actions (daily 06:17 Madrid)          GitHub Pages (static)
 
 | What | Where | Default |
 |---|---|---|
-| Postal code (sets Mercadona's warehouse) | Repo → Settings → Secrets and variables → Actions → **Variables** → `POSTAL_CODE` | `30002` (Murcia → `alc1`) |
 | Run now | Actions → "Update prices and deploy" → Run workflow | daily |
 
 ## Dia data

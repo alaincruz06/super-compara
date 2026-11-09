@@ -1,5 +1,5 @@
 // SuperCompara front end — plain JS, no build step.
-const STORES = { m: { name: 'Mercadona' }, d: { name: 'Dia' } };
+import { STORES, ensureCP, askCP, loadData } from './data.js';
 const PAGE = 60;
 const LIST_KEY = 'supercompara:list';
 
@@ -11,29 +11,33 @@ const norm = (s = '') => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(
 
 let ALL = [];
 let META = null;
+let PLAN = null;
+let AVAIL = [];
 let shown = PAGE;
 let lastResults = [];
 
 const state = {
-  q: '', cat: '', stores: new Set(['m', 'd']), deals: false,
+  q: '', cat: '', stores: new Set(Object.keys(STORES)), deals: false,
   pMin: '', pMax: '', wMin: '', wMax: '', sort: 'rel', view: 'grid',
 };
 
 // ---------- data ----------
+let firstLoad = true;
 async function load() {
   $('#results').innerHTML = '<div class="empty">Cargando productos…</div>';
+  const cp = await ensureCP();
+  $('#cpText').textContent = cp;
   try {
-    const [p, m] = await Promise.all([
-      fetch('data/products.json', { cache: 'no-cache' }).then((r) => r.json()),
-      fetch('data/meta.json', { cache: 'no-cache' }).then((r) => r.json()),
-    ]);
-    META = m;
-    ALL = p.items.map((it) => ({ ...it, _n: norm(`${it.n} ${it.k || ''}`), _sc: norm(it.sc || '') }));
+    PLAN = await loadData(cp);
+    META = PLAN.meta;
+    ALL = PLAN.items;
+    AVAIL = Object.keys(STORES).filter((s) => ALL.some((i) => i.s === s));
   } catch (e) {
     $('#results').innerHTML = '<div class="empty">Todavía no hay datos. Vuelve en unos minutos.</div>';
     return;
   }
-  readHash();
+  if (firstLoad) readHash();
+  firstLoad = false;
   renderChrome();
   run();
 }
@@ -172,14 +176,15 @@ function render() {
   const res = $('#results');
   const { best, unit } = bestPerStore(items);
   const bestKeys = new Set(Object.values(best).map(key));
-  const counts = { m: 0, d: 0 };
-  for (const it of items) counts[it.s]++;
+  const counts = Object.fromEntries(AVAIL.map((s) => [s, 0]));
+  for (const it of items) counts[it.s] = (counts[it.s] || 0) + 1;
 
   const unitLabel = { g: 'kg', ml: 'L', ud: 'ud' }[unit];
   const bestHtml = state.q && Object.keys(best).length
     ? `<div class="best-box">${Object.values(best).map((b) => `<div>Más barato por ${unitLabel} en <b class="${b.s}">${STORES[b.s].name}</b>: ${esc(b.n)} · <b>${unitText(b)}</b></div>`).join('')}</div>`
     : '';
-  $('#summary').innerHTML = `<span>${items.length.toLocaleString('es-ES')} productos (Mercadona ${counts.m.toLocaleString('es-ES')} · Dia ${counts.d.toLocaleString('es-ES')})</span>${bestHtml}`;
+  const per = AVAIL.map((s) => `${STORES[s].name} ${(counts[s] || 0).toLocaleString('es-ES')}`).join(' · ');
+  $('#summary').innerHTML = `<span>${items.length.toLocaleString('es-ES')} productos (${per})</span>${bestHtml}`;
 
   if (!items.length) {
     res.innerHTML = `<div class="empty">No hay productos que coincidan. Prueba con otra palabra o quita filtros.</div>`;
@@ -188,16 +193,16 @@ function render() {
   }
 
   if (state.view === 'compare') {
-    const cols = ['m', 'd'].map((s) => {
+    const colStores = AVAIL.filter((s) => state.stores.has(s));
+    const cols = colStores.map((s) => {
       const list = items.filter((i) => i.s === s);
-      const st = META.stores[s] || {};
       const body = list.length
         ? `<div class="grid">${list.slice(0, shown).map((i) => card(i, bestKeys, `€/${unitLabel}`)).join('')}</div>`
-        : `<div class="empty">${st.status === 'pending' ? 'Datos de Dia aún no disponibles.' : 'Sin resultados en esta tienda.'}</div>`;
+        : '<div class="empty">Sin resultados en esta tienda.</div>';
       return `<div><div class="col-head ${s}"><span>${STORES[s].name}</span><span>${list.length}</span></div>${body}</div>`;
     });
-    res.innerHTML = `<div class="compare">${cols.join('')}</div>`;
-    $('#more').hidden = Math.max(counts.m, counts.d) <= shown;
+    res.innerHTML = `<div class="compare" style="--cols:${cols.length}">${cols.join('')}</div>`;
+    $('#more').hidden = Math.max(0, ...colStores.map((s) => counts[s] || 0)) <= shown;
   } else {
     res.innerHTML = `<div class="${state.view === 'list' ? 'rows' : 'grid'}">${items.slice(0, shown).map((i) => card(i, bestKeys, `€/${unitLabel}`)).join('')}</div>`;
     $('#more').hidden = items.length <= shown;
@@ -213,8 +218,9 @@ function renderChrome() {
     .join('');
 
   $('#storeToggles').innerHTML = Object.entries(STORES)
+    .filter(([s]) => AVAIL.includes(s) || PLAN.allFiles.some((f) => f === s || f.startsWith(`${s}-`)))
     .map(([s, st]) => {
-      const has = ALL.some((i) => i.s === s);
+      const has = AVAIL.includes(s);
       return `<button data-s="${s}" class="${state.stores.has(s) && has ? 'on' : ''}" ${has ? '' : 'disabled title="Sin datos todavía"'}>${st.name}</button>`;
     })
     .join('');
@@ -225,19 +231,22 @@ function renderChrome() {
   for (const k of ['pMin', 'pMax', 'wMin', 'wMax']) $(`#${k}`).value = state[k];
   $('#sort').value = state.sort;
 
-  const notes = [];
-  for (const [s, st] of Object.entries(META.stores)) {
-    if (st.status === 'pending') notes.push(`${st.name}: los precios todavía no están disponibles.`);
-    else if (st.status === 'old') notes.push(`${st.name}: precios del ${new Date(st.updated).toLocaleDateString('es-ES')} (hace más de una semana).`);
-    else if (st.status === 'stale' || st.status === 'error') notes.push(`${st.name}: la última actualización falló; se muestran los precios del ${new Date(st.updated).toLocaleDateString('es-ES')}.`);
+  const notes = [...PLAN.notes];
+  for (const f of PLAN.allFiles) {
+    const st = META.datasets[f] || {};
+    const name = STORES[f[0]].name;
+    if (!st.count || st.status === 'pending') notes.push(`${name}: los precios todavía no están disponibles.`);
+    else if (st.status === 'old') notes.push(`${name}: precios del ${new Date(st.updated).toLocaleDateString('es-ES')} (hace más de una semana).`);
+    else if (st.status === 'stale' || st.status === 'error') notes.push(`${name}: la última actualización falló; se muestran los precios del ${new Date(st.updated).toLocaleDateString('es-ES')}.`);
   }
   $('#notices').innerHTML = notes.map((n) => `<div class="notice">${esc(n)}</div>`).join('');
 
-  const upd = Object.values(META.stores)
-    .filter((s) => s.updated)
-    .map((s) => `${s.name}: ${new Date(s.updated).toLocaleString('es-ES', { dateStyle: 'medium', timeStyle: 'short' })}${s.warehouse ? ` (CP ${META.postalCode}, almacén ${s.warehouse})` : ''}`)
+  const upd = PLAN.files
+    .map((f) => [f, META.datasets[f]])
+    .filter(([, d]) => d?.updated)
+    .map(([f, d]) => `${STORES[f[0]].name}: ${new Date(d.updated).toLocaleString('es-ES', { dateStyle: 'medium', timeStyle: 'short' })}${d.warehouse ? ` (almacén ${d.warehouse})` : ''}`)
     .join(' · ');
-  $('#foot').innerHTML = `Precios actualizados a diario. ${esc(upd)}<br>Proyecto independiente, sin relación con Mercadona ni Dia. Los precios pueden variar; confirma siempre en la web de cada tienda.`;
+  $('#foot').innerHTML = `Precios para el CP ${esc($('#cpText').textContent)}, actualizados a diario. ${esc(upd)}<br>Proyecto independiente, sin relación con ninguna cadena de supermercados. Los precios pueden variar; confirma siempre en la web de cada tienda.`;
   updateListCount();
 }
 
@@ -249,7 +258,7 @@ function writeHash() {
   if (state.sort !== 'rel') p.set('sort', state.sort);
   if (state.view !== 'grid') p.set('view', state.view);
   if (state.deals) p.set('ofertas', '1');
-  if (state.stores.size < 2) p.set('tiendas', [...state.stores].join(''));
+  if (AVAIL.some((s) => !state.stores.has(s))) p.set('tiendas', [...state.stores].join(''));
   for (const k of ['pMin', 'pMax', 'wMin', 'wMax']) if (state[k] !== '') p.set(k, state[k]);
   const h = p.toString();
   history.replaceState(null, '', h ? `#${h}` : location.pathname);
@@ -299,8 +308,8 @@ function renderList() {
     $('#listBody').innerHTML = '<p class="meta">Tu lista está vacía. Pulsa “+ Lista” en cualquier producto.</p>';
     return;
   }
-  const tot = { m: 0, d: 0 };
-  const rows = ['m', 'd'].map((s) => {
+  const tot = Object.fromEntries(Object.keys(STORES).map((s) => [s, 0]));
+  const rows = Object.keys(STORES).map((s) => {
     const items = entries.filter(([, v]) => v.s === s);
     if (!items.length) return '';
     return `<h3 class="tag ${s}">${STORES[s].name}</h3>` + items.map(([k, v]) => {
@@ -315,9 +324,8 @@ function renderList() {
   }).join('');
   $('#listBody').innerHTML = `${rows}
     <div class="totals">
-      ${tot.m ? `<div><span>Mercadona</span><b>${fmt(tot.m)}</b></div>` : ''}
-      ${tot.d ? `<div><span>Dia</span><b>${fmt(tot.d)}</b></div>` : ''}
-      <div class="grand"><span>Total</span><span>${fmt(tot.m + tot.d)}</span></div>
+      ${Object.entries(tot).filter(([, v]) => v).map(([s, v]) => `<div><span>${STORES[s].name}</span><b>${fmt(v)}</b></div>`).join('')}
+      <div class="grand"><span>Total</span><span>${fmt(Object.values(tot).reduce((a, b) => a + b, 0))}</span></div>
     </div>
     <p><button class="link" id="clearList">Vaciar lista</button></p>`;
 }
@@ -368,7 +376,7 @@ document.querySelector('.views').addEventListener('click', (e) => {
   run(false);
 });
 $('#reset').addEventListener('click', () => {
-  Object.assign(state, { q: '', cat: '', deals: false, pMin: '', pMax: '', wMin: '', wMax: '', sort: 'rel', stores: new Set(['m', 'd']) });
+  Object.assign(state, { q: '', cat: '', deals: false, pMin: '', pMax: '', wMin: '', wMax: '', sort: 'rel', stores: new Set(Object.keys(STORES)) });
   renderChrome();
   run();
 });
@@ -386,10 +394,10 @@ $('#results').addEventListener('click', (e) => {
     const it = ALL.find((i) => key(i) === sim.dataset.similar);
     if (!it) return;
     // Use the first meaningful words of the name (drop brands/sizes).
-    const words = it.n.replace(/[0-9].*$/, '').split(/\s+/).filter((w) => w.length > 2 && !/^(hacendado|deliplus|dia|bosque|verde|compy|del|con|para|las|los)$/i.test(w));
+    const words = it.n.replace(/[0-9].*$/, '').split(/\s+/).filter((w) => w.length > 2 && !/^(hacendado|deliplus|dia|consum|bosque|verde|compy|del|con|para|las|los)$/i.test(w));
     state.q = words.slice(0, 3).join(' ');
     state.cat = it.c;
-    state.stores = new Set(['m', 'd']);
+    state.stores = new Set(Object.keys(STORES));
     state.view = 'compare';
     state.sort = 'unit-asc';
     renderChrome();
@@ -402,6 +410,11 @@ $('#toggleFilters').addEventListener('click', (e) => {
   e.currentTarget.setAttribute('aria-expanded', open);
 });
 $('#openList').addEventListener('click', () => openList(true));
+$('#cpBtn').addEventListener('click', async () => {
+  const before = $('#cpText').textContent;
+  const cp = await askCP();
+  if (cp && cp !== before) load();
+});
 $('#closeList').addEventListener('click', () => openList(false));
 $('#scrim').addEventListener('click', () => openList(false));
 $('#listBody').addEventListener('click', (e) => {

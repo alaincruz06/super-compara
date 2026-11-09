@@ -1,6 +1,7 @@
 // Recetas: match the shopping list against SuperCompara's own recipe book.
 // Everything runs in the browser — no AI, no API key, no external service.
 import BOOK from './recetas-data.js';
+import { ensureCP, askCP, loadData } from './data.js';
 
 const LIST_KEY = 'supercompara:list';
 const SAVED_KEY = 'supercompara:savedRecipes2';
@@ -108,7 +109,7 @@ function scaled(q, unit, factor) {
 let catalog = null;
 async function loadCatalog() {
   if (catalog) return catalog;
-  try { catalog = (await fetch('data/products.json').then((r) => r.json())).items.map((it) => ({ ...it, _n: norm(it.n) })); }
+  try { catalog = (await loadData(await ensureCP())).items; }
   catch { catalog = []; }
   return catalog;
 }
@@ -250,7 +251,16 @@ document.addEventListener('click', (e) => {
 });
 window.addEventListener('storage', (e) => { if (e.key === LIST_KEY) renderIngredients(); });
 
+// ---------- postal code ----------
+async function showCP() { $('#cpText').textContent = await ensureCP(); }
+$('#cpBtn').addEventListener('click', async () => {
+  const before = $('#cpText').textContent;
+  const cp = await askCP();
+  if (cp && cp !== before) { $('#cpText').textContent = cp; catalog = null; if ($('#out').innerHTML) search(); }
+});
+
 // ---------- init ----------
+await showCP();
 // Clean up keys from the previous AI version.
 try { ['supercompara:apiKey', 'supercompara:model', 'supercompara:lastRecipes', 'supercompara:savedRecipes'].forEach((k) => localStorage.removeItem(k)); } catch {}
 loadPrefs();

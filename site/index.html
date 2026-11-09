@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SuperCompara · Mercadona vs Dia</title>
-  <meta name="description" content="Compara precios de Mercadona y Dia: busca productos, filtra y ordena por precio, oferta o peso." />
+  <title>SuperCompara · Compara precios de supermercados</title>
+  <meta name="description" content="Compara precios de Mercadona, Consum y Dia según tu código postal: busca productos, filtra y ordena por precio, oferta o peso." />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛒</text></svg>" />
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -16,6 +16,7 @@
         <input id="q" type="search" placeholder="Busca un producto: leche, aceite de oliva, pañales…" autocomplete="off" aria-label="Buscar producto" />
         <button type="submit" aria-label="Buscar">Buscar</button>
       </form>
+      <button class="list-btn" id="cpBtn" title="Cambiar código postal">📍 <span id="cpText">—</span></button>
       <a class="list-btn recipes-link" href="recetas.html">🍳 Recetas</a>
       <button class="list-btn" id="openList" aria-label="Lista de la compra">🧾 Lista <span id="listCount" class="pill">0</span></button>
     </div>

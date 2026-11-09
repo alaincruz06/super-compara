@@ -10,7 +10,7 @@
 .ing input { margin: 0; }
 .ing.off { opacity: .45; text-decoration: line-through; }
 .ing .dot { width: 8px; height: 8px; border-radius: 50%; }
-.dot.m { background: var(--m); } .dot.d { background: var(--d); }
+.dot.m { background: var(--m); } .dot.d { background: var(--d); } .dot.c { background: var(--c); }
 .field { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
 .field input, .field select { padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); font-size: 14px; }
 .cfg { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; margin: 10px 0 12px; }
