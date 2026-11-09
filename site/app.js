@@ -146,7 +146,7 @@ function card(it, bestKeys, bestLabel = '€/kg') {
       ${it.d ? `<span class="tag deal">-${it.d}%</span>` : ''}
       ${isBest ? `<span class="tag bestt">Mejor ${bestLabel}</span>` : ''}
     </div>
-    <a class="img" href="${esc(it.u)}" target="_blank" rel="noopener">${it.img ? `<img loading="lazy" src="${esc(it.img)}" alt="">` : ''}</a>
+    <a class="img" href="${esc(it.u)}" target="_blank" rel="noopener">${it.img ? `<img loading="lazy" src="${esc(it.img)}" alt="" onerror="this.remove()">` : ''}</a>
     <div class="info">
       <h3 class="name"><a href="${esc(it.u)}" target="_blank" rel="noopener" title="${esc(it.n)}">${esc(it.n)}</a></h3>
       <div class="meta">${esc(size)}</div>
@@ -315,7 +315,7 @@ function renderList() {
     return `<h3 class="tag ${s}">${STORES[s].name}</h3>` + items.map(([k, v]) => {
       tot[s] += v.p * v.qty;
       return `<div class="li">
-        ${v.img ? `<img src="${esc(v.img)}" alt="">` : ''}
+        ${v.img ? `<img src="${esc(v.img)}" alt="" onerror="this.remove()">` : ''}
         <div class="n"><a href="${esc(v.u)}" target="_blank" rel="noopener">${esc(v.n)}</a><div class="meta">${fmt(v.p)} / ud</div></div>
         <div class="qty"><button data-dec="${esc(k)}">−</button><span>${v.qty}</span><button data-inc="${esc(k)}">+</button></div>
         <b>${fmt(v.p * v.qty)}</b>

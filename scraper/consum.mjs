@@ -63,7 +63,8 @@ function normalize(p, paths) {
     id: String(p.code || p.id),
     n: pd.brand?.name && !pd.name.toLowerCase().includes(pd.brand.name.toLowerCase()) ? `${pd.name} ${titleCase(pd.brand.name)}` : pd.name,
     k: pd.format || '',
-    img: pd.imageURL,
+    // productData.imageURL points to files that don't exist; the media list has the real ones.
+    img: [...(p.media || [])].sort((a, b) => (a.order ?? 99) - (b.order ?? 99))[0]?.url || pd.imageURL,
     u: pd.url,
     p: price,
     pp: onOffer ? base : null,
