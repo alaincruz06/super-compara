@@ -23,11 +23,16 @@ export async function resolveWarehouse(postalCode) {
 // Province code ("01".."52") -> warehouse, for provinces the online shop serves.
 export async function provinceWarehouses({ log = console.log } = {}) {
   const map = {};
+  // Try a few postal codes per province: the capital's "XX001" isn't always
+  // in the online delivery area while other towns in the province are.
+  const SUFFIXES = ['001', '003', '005', '010', '100', '200', '500'];
   for (let i = 1; i <= 52; i++) {
     const prov = String(i).padStart(2, '0');
-    const wh = await resolveWarehouse(`${prov}001`);
-    if (wh) map[prov] = wh;
-    await sleep(300);
+    for (const suf of SUFFIXES) {
+      const wh = await resolveWarehouse(`${prov}${suf}`);
+      await sleep(250);
+      if (wh) { map[prov] = wh; break; }
+    }
   }
   log(`Mercadona: warehouses by province ${JSON.stringify(map)}`);
   return map;
