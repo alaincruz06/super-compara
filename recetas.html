@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Recetas con tu lista · SuperCompara</title>
+  <meta name="description" content="Encuentra recetas con los ingredientes de tu lista de la compra: tiempo, raciones, número de platos y dieta." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍳</text></svg>" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="recetas.css" />
+</head>
+<body>
+  <header class="top">
+    <div class="wrap top-row">
+      <a class="brand" href="./">🛒 <b>Super</b>Compara</a>
+      <nav class="nav">
+        <a href="./">Comparar precios</a>
+        <a href="recetas.html" class="on" aria-current="page">🍳 Recetas</a>
+      </nav>
+      <button class="list-btn" id="cpBtn" title="Cambiar código postal">📍 <span id="cpText">—</span></button>
+    </div>
+  </header>
+
+  <main class="wrap recipes">
+    <section class="panel" aria-labelledby="ingTitle">
+      <h2 id="ingTitle">1. Tus ingredientes</h2>
+      <p class="meta">Desmarca lo que no quieras usar. Los productos vienen de tu <a href="./">lista de la compra</a>.</p>
+      <div id="ingList" class="ing-list"></div>
+      <label class="field">
+        <span>Otros ingredientes que ya tienes en casa</span>
+        <input id="pantry" type="text" placeholder="patatas, arroz, cebolla, queso…" />
+      </label>
+      <label class="chk basics"><input type="checkbox" id="basics" checked /> Tengo lo básico: aceite, sal, ajo, especias, azúcar, harina y caldo</label>
+    </section>
+
+    <section class="panel" aria-labelledby="cfgTitle">
+      <h2 id="cfgTitle">2. Configura</h2>
+      <div class="cfg">
+        <label class="field"><span>Tiempo máximo por receta</span>
+          <select id="time">
+            <option value="15">15 min</option><option value="30" selected>30 min</option>
+            <option value="45">45 min</option><option value="60">1 hora</option><option value="120">Sin límite</option>
+          </select></label>
+        <label class="field"><span>Número de platos</span>
+          <input id="dishes" type="number" min="1" max="7" value="3" /></label>
+        <label class="field"><span>Raciones por plato</span>
+          <input id="servings" type="number" min="1" max="12" value="2" /></label>
+        <label class="field"><span>Tipo de comida</span>
+          <select id="meal">
+            <option value="">Cualquiera</option><option value="d">Desayuno</option>
+            <option value="c">Comida</option><option value="n">Cena</option>
+            <option value="prep">Meal prep (tápers)</option>
+            <option value="s">Snack / merienda / postre</option>
+          </select></label>
+        <label class="field"><span>Dieta</span>
+          <select id="diet">
+            <option value="">Sin restricciones</option><option value="v">Vegetariana</option>
+            <option value="vg">Vegana</option><option value="gf">Sin gluten</option><option value="lf">Sin lactosa</option>
+          </select></label>
+        <label class="field"><span>Dificultad</span>
+          <select id="difficulty">
+            <option value="">Cualquiera</option><option value="f">Solo fáciles</option>
+          </select></label>
+        <label class="field"><span>Ingredientes extra</span>
+          <select id="extras">
+            <option value="few" selected>Que falten 2 como mucho</option>
+            <option value="none">Solo lo que tengo</option>
+            <option value="any">No importa</option>
+          </select></label>
+        <label class="field"><span>Utensilios</span>
+          <select id="tools">
+            <option value="">Cocina completa</option>
+            <option value="nooven">Sin horno</option>
+            <option value="micro">Solo microondas</option>
+          </select></label>
+      </div>
+      <div class="go">
+        <button id="generate" class="primary">🍳 Buscar recetas</button>
+        <span id="status" class="meta" role="status"></span>
+      </div>
+    </section>
+
+    <section id="out" aria-live="polite"></section>
+    <section id="saved"></section>
+  </main>
+
+  <footer class="wrap foot">Recetario propio de SuperCompara. Revisa alergias y tiempos de cocción antes de cocinar.</footer>
+  <script type="module" src="recetas.js"></script>
+</body>
+</html>

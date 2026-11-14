@@ -1,0 +1,190 @@
+{
+  "built": "2026-11-14T12:18:07.278Z",
+  "groups": [
+    {
+      "id": "fruta-verdura",
+      "name": "Fruta y verdura"
+    },
+    {
+      "id": "carne",
+      "name": "Carne"
+    },
+    {
+      "id": "pescado",
+      "name": "Pescado y marisco"
+    },
+    {
+      "id": "charcuteria",
+      "name": "Charcutería y quesos"
+    },
+    {
+      "id": "lacteos",
+      "name": "Huevos, leche y mantequilla"
+    },
+    {
+      "id": "yogures",
+      "name": "Yogures y postres"
+    },
+    {
+      "id": "panaderia",
+      "name": "Panadería y bollería"
+    },
+    {
+      "id": "congelados",
+      "name": "Congelados y helados"
+    },
+    {
+      "id": "despensa",
+      "name": "Arroz, pasta y legumbres"
+    },
+    {
+      "id": "aceite",
+      "name": "Aceite, salsas y especias"
+    },
+    {
+      "id": "conservas",
+      "name": "Conservas, caldos y cremas"
+    },
+    {
+      "id": "desayuno",
+      "name": "Café, cereales y galletas"
+    },
+    {
+      "id": "dulces",
+      "name": "Azúcar, chocolate y golosinas"
+    },
+    {
+      "id": "aperitivos",
+      "name": "Aperitivos y frutos secos"
+    },
+    {
+      "id": "preparados",
+      "name": "Platos preparados y pizzas"
+    },
+    {
+      "id": "bebidas",
+      "name": "Agua, refrescos y zumos"
+    },
+    {
+      "id": "bodega",
+      "name": "Bodega"
+    },
+    {
+      "id": "limpieza",
+      "name": "Limpieza y hogar"
+    },
+    {
+      "id": "higiene",
+      "name": "Cuidado personal"
+    },
+    {
+      "id": "salud",
+      "name": "Salud y parafarmacia"
+    },
+    {
+      "id": "bebe",
+      "name": "Bebé"
+    },
+    {
+      "id": "mascotas",
+      "name": "Mascotas"
+    },
+    {
+      "id": "otros",
+      "name": "Otros"
+    }
+  ],
+  "stores": {
+    "m": {
+      "name": "Mercadona",
+      "provinces": {
+        "11": "svq1",
+        "21": "svq1",
+        "28": "mad3",
+        "30": "alc1",
+        "41": "svq1",
+        "46": "vlc1",
+        "03": "alc1",
+        "08": "bcn1"
+      },
+      "fallback": "mad3"
+    },
+    "c": {
+      "name": "Consum",
+      "provinces": [
+        "02",
+        "03",
+        "04",
+        "08",
+        "12",
+        "13",
+        "16",
+        "17",
+        "18",
+        "23",
+        "25",
+        "29",
+        "30",
+        "43",
+        "44",
+        "45",
+        "46",
+        "50"
+      ]
+    },
+    "d": {
+      "name": "Dia",
+      "national": true
+    }
+  },
+  "datasets": {
+    "m-alc1": {
+      "store": "m",
+      "count": 4412,
+      "updated": "2026-11-14T12:15:09.219Z",
+      "status": "ok",
+      "warehouse": "alc1"
+    },
+    "m-bcn1": {
+      "store": "m",
+      "count": 4396,
+      "updated": "2026-11-14T12:15:33.681Z",
+      "status": "ok",
+      "warehouse": "bcn1"
+    },
+    "m-mad3": {
+      "store": "m",
+      "count": 4338,
+      "updated": "2026-11-14T12:15:57.975Z",
+      "status": "ok",
+      "warehouse": "mad3"
+    },
+    "m-svq1": {
+      "store": "m",
+      "count": 4340,
+      "updated": "2026-11-14T12:16:22.582Z",
+      "status": "ok",
+      "warehouse": "svq1"
+    },
+    "m-vlc1": {
+      "store": "m",
+      "count": 4385,
+      "updated": "2026-11-14T12:16:47.318Z",
+      "status": "ok",
+      "warehouse": "vlc1"
+    },
+    "c": {
+      "store": "c",
+      "count": 9378,
+      "updated": "2026-11-14T12:18:07.183Z",
+      "status": "ok"
+    },
+    "d": {
+      "store": "d",
+      "count": 5673,
+      "updated": "2026-11-08T10:54:40.538Z",
+      "status": "ok",
+      "method": "node"
+    }
+  }
+}
