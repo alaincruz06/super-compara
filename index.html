@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SuperCompara · Compara precios de supermercados</title>
+  <meta name="description" content="Compara precios de Mercadona, Consum y Dia según tu código postal: busca productos, filtra y ordena por precio, oferta o peso." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛒</text></svg>" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="top">
+    <div class="wrap top-row">
+      <a class="brand" href="#" id="home">🛒 <b>Super</b>Compara</a>
+      <form class="search" id="searchForm" role="search">
+        <input id="q" type="search" placeholder="Busca un producto: leche, aceite de oliva, pañales…" autocomplete="off" aria-label="Buscar producto" />
+        <button type="submit" aria-label="Buscar">Buscar</button>
+      </form>
+      <button class="list-btn" id="cpBtn" title="Cambiar código postal">📍 <span id="cpText">—</span></button>
+      <a class="list-btn recipes-link" href="recetas.html">🍳 Recetas</a>
+      <button class="list-btn" id="openList" aria-label="Lista de la compra">🧾 Lista <span id="listCount" class="pill">0</span></button>
+    </div>
+    <nav class="wrap cats" id="cats" aria-label="Categorías"></nav>
+  </header>
+
+  <main class="wrap">
+    <div id="notices"></div>
+
+    <button class="filters-btn" id="toggleFilters" aria-expanded="false">⚙︎ Filtros y orden</button>
+    <section class="toolbar" id="toolbar" aria-label="Filtros">
+      <div class="group stores" id="storeToggles"></div>
+      <label class="chk"><input type="checkbox" id="onlyDeals" /> Solo ofertas</label>
+      <div class="group range">
+        <span>Precio €</span>
+        <input type="number" id="pMin" min="0" step="0.1" placeholder="mín" inputmode="decimal" />
+        <input type="number" id="pMax" min="0" step="0.1" placeholder="máx" inputmode="decimal" />
+      </div>
+      <div class="group range">
+        <span>Peso/vol. (g·ml)</span>
+        <input type="number" id="wMin" min="0" step="50" placeholder="mín" inputmode="numeric" />
+        <input type="number" id="wMax" min="0" step="50" placeholder="máx" inputmode="numeric" />
+      </div>
+      <label class="group">
+        <span>Ordenar</span>
+        <select id="sort">
+          <option value="rel">Relevancia</option>
+          <option value="price-asc">Precio: menor a mayor</option>
+          <option value="price-desc">Precio: mayor a menor</option>
+          <option value="unit-asc">Precio por kg/L: menor</option>
+          <option value="disc-desc">Mayor descuento</option>
+          <option value="w-asc">Peso/volumen: menor</option>
+          <option value="w-desc">Peso/volumen: mayor</option>
+        </select>
+      </label>
+      <div class="views" role="group" aria-label="Vista">
+        <button data-view="grid" title="Cuadrícula">▦</button>
+        <button data-view="list" title="Lista">☰</button>
+        <button data-view="compare" title="Comparar tiendas lado a lado">⇆ Comparar</button>
+      </div>
+      <button class="link" id="reset">Limpiar filtros</button>
+    </section>
+
+    <div class="summary" id="summary"></div>
+    <section id="results" aria-live="polite"></section>
+    <div class="more"><button id="more" hidden>Ver más productos</button></div>
+  </main>
+
+  <aside class="drawer" id="drawer" aria-label="Lista de la compra" hidden>
+    <div class="drawer-head">
+      <h2>Lista de la compra</h2>
+      <button id="closeList" aria-label="Cerrar">✕</button>
+    </div>
+    <div id="listBody"></div>
+  </aside>
+  <div class="scrim" id="scrim" hidden></div>
+
+  <footer class="wrap foot" id="foot"></footer>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
